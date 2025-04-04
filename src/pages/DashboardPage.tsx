@@ -10,10 +10,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (userData) {
-      fetchAssignments();
       fetchProfileData();
     }
   }, [userData]);
+
+  useEffect(() => {
+    fetchAssignments();
+  }, []);
 
   return (
     <PagesLayout>
