@@ -1,4 +1,4 @@
-import { axiosInstance } from "../lib/axios-instance";
+import { axiosInstance, axiosInstanceInsecure } from "../lib/axios-instance";
 
 export class AssignmentService {
   // Create an Assignment **************************
@@ -14,7 +14,7 @@ export class AssignmentService {
   // Get All Assignments **************************
   async getAllAssignments() {
     try {
-      const res = await axiosInstance.get("/api/assignments");
+      const res = await axiosInstanceInsecure.get("/api/assignments");
       return res.data;
     } catch (error) {
       console.log(error);
