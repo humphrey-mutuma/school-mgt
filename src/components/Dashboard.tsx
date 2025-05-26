@@ -21,6 +21,19 @@ const Dashboard = () => {
       assignment?.courseName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Check if assignment is currently active
+  const isAssignmentActive = (assignment) => {
+    const now = new Date();
+    const startDate = new Date(assignment.startDate);
+    const endDate = new Date(assignment.endDate);
+    return now >= startDate && now <= endDate;
+  };
+  const isAssignmentOverDue = (assignment) => {
+    const now = new Date();
+    const endDate = new Date(assignment.endDate);
+    return now > endDate;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main content */}
@@ -111,8 +124,9 @@ const Dashboard = () => {
             <ul className="divide-y divide-gray-200">
               {filteredAssignments.length > 0 ? (
                 filteredAssignments?.map((assignment: any) => {
-                  const submittedAssignment = profileData?.submissions.find(
-                    (sub) => sub.assignmentId == assignment?._id
+                  const submission = profileData?.submissions.find(
+                    (submission) =>
+                      submission.assignmentId._id === assignment._id
                   );
                   return (
                     <li key={assignment?._id}>
@@ -126,51 +140,57 @@ const Dashboard = () => {
                               <Calendar className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
                               <p>
                                 Due on{" "}
-                                {assignment?.submissionDeadline &&
-                                  format(
-                                    assignment?.submissionDeadline,
-                                    "yy-MM-dd hh-mm"
-                                  )}
+                                {assignment?.endDate &&
+                                  format(assignment?.endDate, "yy-MM-dd HH-MM")}
                               </p>{" "}
                             </div>
                             <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
                               {assignment?.courseName}
                             </p>
                           </div>
-                          <div className="  flex-shrink-0 flex">
+                          <div className="  flex-shrink-0 flex max-w-[75%]">
                             <p className="flex items-center text-sm text-gray-500">
-                              <span className="truncate flex-nowrap">
+                              <span className="  flex-wrap">
                                 {assignment?.description}
                               </span>
                             </p>
                           </div>
                         </div>
 
-                        <aside className="mt-2 sm:flex sm:justify-between">
-                          {!userData ? (
-                            <Link to={"/login"}>
+                        {userData?.role == "STUDENT" ? (
+                          <aside className="mt-2 sm:flex sm:justify-between">
+                            {submission ? (
+                              <div>
+                                Score : {submission?.score} /{" "}
+                                {submission?.assignmentId?.questions?.length ||
+                                  0}
+                              </div>
+                            ) : isAssignmentActive(assignment) ? (
+                              <Link to={`/assignment/${assignment._id}`}>
+                                <Button className="cursor-pointer">
+                                  Attempt
+                                </Button>
+                              </Link>
+                            ) : isAssignmentOverDue(assignment) ? (
+                              <p>Over Due</p>
+                            ) : (
                               <Button disabled className="cursor-pointer">
-                                Login To Attempt
+                                Starting:{" "}
+                                {assignment?.startDate &&
+                                  format(
+                                    assignment?.startDate,
+                                    "yy-MM-dd HH-MM"
+                                  )}
                               </Button>
-                            </Link>
-                          ) : userData?.id == assignment?.lecturerId ? (
-                            <Link to={`/mark/${assignment._id}`}>
-                              <Button className="cursor-pointer">Mark</Button>
-                            </Link>
-                          ) : submittedAssignment ? (
-                            <Button className="" disabled>
-                              {submittedAssignment?.score == 0
-                                ? "Awaiting Grading"
-                                : "Marks"}
-                            </Button>
-                          ) : (
-                            <Link to={`/assignment/${assignment._id}`}>
-                              <Button className="cursor-pointer">
-                                {"Attempt"}
-                              </Button>
-                            </Link>
-                          )}
-                        </aside>
+                            )}
+                          </aside>
+                        ) : (
+                          <p className="text-sm">
+                            Starting:{" "}
+                            {assignment?.startDate &&
+                              format(assignment?.startDate, "yy-MM-dd HH-MM")}
+                          </p>
+                        )}
                       </div>
                     </li>
                   );
